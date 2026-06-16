@@ -158,6 +158,12 @@
       border: 1px solid rgba(255,255,255,.65); box-shadow: 0 8px 30px rgba(54,69,79,.10), inset 0 1px 0 rgba(255,255,255,.85); }
     .chip { background: rgba(255,255,255,.5); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%);
       border: 1px solid rgba(255,255,255,.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.7); }
+    /* a SELECTED (solid-coral) button keeps its label + icons white in EVERY state — so the text
+       never inherits dark or repaints coral-on-coral and vanishes against the red fill */
+    .bg-primary-theme.text-white,
+    .bg-primary-theme.text-white:hover,
+    .bg-primary-theme.text-white:focus { color:#fff; }
+    .bg-primary-theme.text-white [class*="fa-"] { color:#fff; }
     /* hover tooltip */
     .tip { position: relative; }
     .tip::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%) translateY(-4px);
@@ -284,6 +290,16 @@
     /* soft edge fade kept small so it never clips the selected card's red ring */
     .maskx { -webkit-mask-image: linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 8px), transparent); mask-image: linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 8px), transparent); }
     .masky { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8px, #000 calc(100% - 8px), transparent); mask-image: linear-gradient(to bottom, transparent, #000 8px, #000 calc(100% - 8px), transparent); }
+    /* photo GRID layout in real CSS — the Tailwind Play CDN generates arbitrary classes
+       (grid-cols-*, aspect-[4/5], max-h-[..vh]) asynchronously, so the first time grid view
+       opened the cells had no size and collapsed. Defining it here removes that JIT dependency. */
+    #carousel.cv-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; max-height:46vh; overflow-y:auto; padding:.5rem; }
+    #carousel.cv-grid.cv-big { grid-template-columns:1fr; max-height:80vh; }
+    #carousel.cv-grid > .cv-cell { aspect-ratio:4/5; }
+    @media (min-width:640px){
+      #carousel.cv-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
+      #carousel.cv-grid.cv-big { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
     /* circular progress ring around the active date number (story-style) */
     @property --p { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
     .ring { width: 42px; height: 42px; border-radius: 50%; padding: 3px; display: grid; place-items: center;
@@ -1677,10 +1693,10 @@
         el.innerHTML = photos.map((p,i)=>`
           <div ${a11y(i)} class="${hid(p)} snap-c group relative w-full shrink-0 cursor-pointer overflow-hidden rounded-3xl shadow-card transition duration-300 ${i===active?'ring-4 ring-primary-theme':'opacity-95'} ${big?'h-[70vh]':'h-[46vh]'}">${overlay(p,i)}</div>`).join('');
       } else {
-        // grid — bigger cells (fewer columns) when map is off
-        el.className = `grid ${big?'max-h-[80vh] grid-cols-1 sm:grid-cols-2':'max-h-[46vh] grid-cols-2 sm:grid-cols-3'} gap-2 overflow-y-auto p-2 boom-scrollbar sm:gap-3`;
+        // grid — layout lives in real CSS (.cv-grid/.cv-cell) so it never waits on the CDN's JIT
+        el.className = `cv-grid${big?' cv-big':''} boom-scrollbar`;
         el.innerHTML = photos.map((p,i)=>`
-          <div ${a11y(i)} class="${hid(p)} group relative aspect-[4/5] cursor-pointer overflow-hidden rounded-2xl shadow-card transition duration-300 ${i===active?'ring-4 ring-primary-theme':'hover:-translate-y-0.5'}">${overlay(p,i)}</div>`).join('');
+          <div ${a11y(i)} class="${hid(p)} cv-cell group relative cursor-pointer overflow-hidden rounded-2xl shadow-card transition duration-300 ${i===active?'ring-4 ring-primary-theme':'hover:-translate-y-0.5'}">${overlay(p,i)}</div>`).join('');
       }
     }
 
