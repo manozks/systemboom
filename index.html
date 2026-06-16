@@ -293,9 +293,12 @@
     /* photo GRID layout in real CSS — the Tailwind Play CDN generates arbitrary classes
        (grid-cols-*, aspect-[4/5], max-h-[..vh]) asynchronously, so the first time grid view
        opened the cells had no size and collapsed. Defining it here removes that JIT dependency. */
-    #carousel.cv-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; max-height:46vh; overflow-y:auto; padding:.5rem; }
+    #carousel.cv-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; max-height:46vh; overflow-y:auto; padding:.5rem; align-items:start; }
     #carousel.cv-grid.cv-big { grid-template-columns:1fr; max-height:80vh; }
-    #carousel.cv-grid > .cv-cell { aspect-ratio:4/5; }
+    /* 4:5 cells via the padding-bottom hack (universal — aspect-ratio is unreliable on some iOS Safari,
+       which left cells with no height so they collapsed and overlapped). Media is absolutely filled. */
+    #carousel.cv-grid > .cv-cell { position:relative; height:0; padding-bottom:125%; }
+    #carousel.cv-grid > .cv-cell > img, #carousel.cv-grid > .cv-cell > video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     @media (min-width:640px){
       #carousel.cv-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
       #carousel.cv-grid.cv-big { grid-template-columns:repeat(2,minmax(0,1fr)); }
