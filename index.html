@@ -2,8 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Photo · Timeline — Systemboom</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Systemboom — Photo · Timeline of your life</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Systemboom is your Circle of Life — capture, relive and share the photos, places and people that make up your life's journey on an interactive map and timeline." />
+  <meta name="author" content="Systemboom" />
+  <link rel="canonical" href="https://manozks.github.io/systemboom/" />
+  <meta name="theme-color" content="#D92A20" />
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Systemboom" />
+  <meta property="og:title" content="Systemboom — Photo · Timeline of your life" />
+  <meta property="og:description" content="Capture, relive and share the photos, places and people that make up your Circle of Life — on an interactive map and timeline." />
+  <meta property="og:url" content="https://manozks.github.io/systemboom/" />
+  <meta property="og:image" content="https://manozks.github.io/systemboom/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Systemboom — Photo · Timeline of your life" />
+  <meta name="twitter:description" content="Capture, relive and share the photos, places and people that make up your Circle of Life." />
+  <meta name="twitter:image" content="https://manozks.github.io/systemboom/logo.png" />
+
+  <!-- Mobile / add-to-home-screen -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Systemboom" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="apple-touch-icon" href="logo.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -196,13 +221,6 @@
     /* narrative bookends fill the empty ends */
     .rl-spacer { flex:0 0 50%; display:flex; align-items:center; overflow:hidden; }
     .rl-cap-l { justify-content:flex-end; padding-right:8px; gap:12px; }
-    /* ancestry link — the roots before the timeline begins */
-    .rl-anc { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:9999px;
-      font-size:12px; font-weight:800; white-space:nowrap; cursor:pointer; color:var(--brand);
-      background:rgba(var(--brand-glow),.10); border:1.5px solid rgba(var(--brand-glow),.30);
-      transition:background .2s, transform .15s; }
-    .rl-anc:hover { background:rgba(var(--brand-glow),.18); transform:translateY(-1px); }
-    .rl-anc:active { transform:scale(.96); }
     .rl-cap-r { justify-content:flex-start; padding-left:8px; gap:14px; }
     .rl-cap { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:var(--c-a2); opacity:.82; white-space:nowrap; }
     .rl-cap i { color:var(--brand); }
@@ -404,12 +422,12 @@
     .im-slide[data-role="prev"]{ top:-100%; } .im-slide[data-role="curr"]{ top:0; } .im-slide[data-role="next"]{ top:100%; }
     .im-zoom { width:100%; height:100%; display:grid; place-items:center; transform-origin:50% 50%; will-change:transform; }
     .im-media { max-width:100%; max-height:100%; object-fit:contain; -webkit-user-drag:none; user-select:none; pointer-events:none; }
-    .im-cap { position:absolute; left:0; right:0; bottom:0; z-index:5; padding:70px 22px 30px; pointer-events:none; color:#fff;
+    .im-cap { position:absolute; left:0; right:0; bottom:0; z-index:5; padding:70px calc(22px + env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) calc(22px + env(safe-area-inset-left)); pointer-events:none; color:#fff;
       background:linear-gradient(to top, rgba(0,0,0,.74), rgba(0,0,0,.12) 60%, transparent); }
     .im-cap .d{ font-size:13px; font-weight:600; opacity:.85; } .im-cap .n{ font-size:23px; font-weight:800; line-height:1.15; margin-top:3px; }
     .im-cap .l{ font-size:13px; opacity:.85; margin-top:4px; }
     .im-top { position:absolute; top:0; left:0; right:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding:14px 14px 26px; background:linear-gradient(to bottom, rgba(0,0,0,.5), transparent); }
+      padding:calc(14px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 26px calc(14px + env(safe-area-inset-left)); background:linear-gradient(to bottom, rgba(0,0,0,.5), transparent); }
     .im-btn { width:42px; height:42px; flex:0 0 auto; display:grid; place-items:center; border:none; border-radius:50%; cursor:pointer; color:#fff;
       background:rgba(255,255,255,.16); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); font-size:16px; transition:background .2s, transform .12s; }
     .im-btn:hover{ background:rgba(255,255,255,.3); } .im-btn:active{ transform:scale(.88); }
@@ -822,7 +840,7 @@
         <!-- media controls (FB-style floating translucent) — hidden for videos (native controls take over) -->
         <div id="modalCtrls" class="absolute bottom-5 left-0 flex w-full items-center justify-center gap-7 px-4">
           <button onclick="modalPrevPhoto()" aria-label="Previous photo / memory" class="fbtn grid h-11 w-11 place-items-center rounded-full"><i class="fa fa-chevron-left"></i></button>
-          <button id="modalPlay" onclick="togglePlay()" class="grid h-14 w-14 place-items-center rounded-full bg-primary-theme text-white shadow-glow active:scale-90"><i class="fa fa-play text-lg"></i></button>
+          <button id="modalPlay" onclick="togglePlay()" aria-label="Play / pause slideshow" class="grid h-14 w-14 place-items-center rounded-full bg-primary-theme text-white shadow-glow active:scale-90"><i class="fa fa-play text-lg"></i></button>
           <button onclick="modalNextPhoto()" aria-label="Next photo / memory" class="fbtn grid h-11 w-11 place-items-center rounded-full"><i class="fa fa-chevron-right"></i></button>
         </div>
 
@@ -838,7 +856,7 @@
           <!-- author -->
           <div class="flex items-start justify-between">
             <div class="flex gap-3">
-              <img class="h-11 w-11 rounded-full object-cover ring-2 ring-primary-theme/30" src="https://i.pravatar.cc/80?img=12" />
+              <img class="h-11 w-11 rounded-full object-cover ring-2 ring-primary-theme/30" src="https://i.pravatar.cc/80?img=12" alt="Roshan Joshi" />
               <div>
                 <h3 class="font-bold leading-tight">Roshan Joshi</h3>
                 <div class="flex items-center gap-2 text-xs text-accent-blue/50">
@@ -2965,7 +2983,7 @@
       const tm = i>0 ? modeOf(i) : {icon:'fa-baby',label:'born here'};
       return `<div class="pp" role="button" tabindex="0" aria-label="View ${p.name}" title="Tap to choose how to view"
           onclick="openViewChooser(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openViewChooser(${i});}">
-        <img src="${imgFor(p.id)}" onerror="this.onerror=null;this.src='${imgAlt(p.id)}'"/>
+        <img src="${imgFor(p.id)}" alt="${p.name}" onerror="this.onerror=null;this.src='${imgAlt(p.id)}'"/>
         <span class="pp-mode"><i class="fa-solid ${tm.icon}"></i> ${tm.label}</span>
         <button class="pp-hide" type="button" title="Hide this photo from the map" aria-label="Hide this photo from the map"
           onclick="event.stopPropagation(); hideMapPhoto(${i})"><i class="fa-solid fa-eye-slash"></i></button>
