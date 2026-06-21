@@ -171,6 +171,31 @@
     .st-flag { display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:9999px; border:1px solid var(--c-line); font-size:12.5px; font-weight:700; color:var(--c-text); background:var(--c-bg); }
     .st-flag .fl { font-size:17px; line-height:1; }
     .st-flag .ct { display:grid; place-items:center; min-width:18px; height:18px; padding:0 5px; border-radius:9999px; background:rgba(var(--brand-glow),.14); color:var(--brand); font-size:10px; font-weight:800; }
+    /* ===== marketplace: list · buy · track ===== */
+    .mk-switch { appearance:none; -webkit-appearance:none; width:38px; height:22px; border-radius:9999px; background:var(--c-line); position:relative; cursor:pointer; transition:background .2s; flex:0 0 auto; }
+    .mk-switch:checked { background:var(--brand); }
+    .mk-switch::after { content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+    .mk-switch:checked::after { transform:translateX(16px); }
+    .mk-in { width:100%; border-radius:10px; border:1px solid var(--c-line); background:var(--c-bg); padding:8px 11px; font-size:13px; font-weight:600; color:var(--c-text); outline:none; }
+    .mk-in:focus { border-color:rgba(var(--brand-glow),.6); }
+    .mk-lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:var(--c-a2); opacity:.7; margin-bottom:3px; display:block; }
+    .sale-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:9999px; font-size:10.5px; font-weight:800; color:#fff; background:#16a34a; box-shadow:0 2px 8px rgba(0,0,0,.28); }
+    .mk-price { font-size:30px; font-weight:800; color:var(--c-text); line-height:1; }
+    .mk-cond { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:9999px; font-size:11px; font-weight:700; color:#16a34a; background:rgba(22,163,74,.12); }
+    .mk-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:7px 0; border-bottom:1px dashed var(--c-line); color:var(--c-a2); }
+    .mk-row b { color:var(--c-text); font-weight:700; }
+    .mk-total { display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:var(--c-text); padding-top:10px; }
+    .mk-total b { color:var(--brand); }
+    .mk-buy { width:100%; margin-top:14px; padding:13px; border-radius:9999px; background:var(--brand); color:#fff; font-weight:800; font-size:15px; border:none; cursor:pointer; box-shadow:0 8px 22px rgba(var(--brand-glow),.45); transition:.15s; }
+    .mk-buy:hover { filter:brightness(1.08); } .mk-buy:active { transform:scale(.98); }
+    .mk-ghost { width:100%; margin-top:8px; padding:11px; border-radius:9999px; background:var(--c-bg); color:var(--c-a2); font-weight:700; font-size:13px; border:1px solid var(--c-line); cursor:pointer; }
+    .mk-track { display:flex; margin:16px 0 4px; }
+    .mk-track .step { flex:1; text-align:center; position:relative; font-size:9px; font-weight:700; color:var(--c-a2); line-height:1.2; }
+    .mk-track .step .d { position:relative; z-index:1; width:22px; height:22px; margin:0 auto 6px; border-radius:50%; display:grid; place-items:center; background:var(--c-bg); border:2px solid var(--c-line); color:var(--c-a2); font-size:9px; }
+    .mk-track .step.on { color:var(--brand); }
+    .mk-track .step.on .d { background:var(--brand); border-color:var(--brand); color:#fff; }
+    .mk-track .step:not(:first-child)::before { content:''; position:absolute; top:10px; right:50%; left:-50%; height:2px; background:var(--c-line); z-index:0; }
+    .mk-track .step.on:not(:first-child)::before { background:var(--brand); }
     /* ===== Ken Burns drift on the immersive hero ===== */
     @keyframes kenburns { from{ transform:scale(1.001) } to{ transform:scale(1.09) translate(-1.5%,-1%) } }
     #stageWrap.stage-on #stageImg { animation:kenburns 14s ease-out alternate infinite; }
@@ -1119,6 +1144,22 @@
               <span id="upFavStar" class="grid h-6 w-6 place-items-center rounded-full text-accent-blue/40 transition"><i class="fa-regular fa-star"></i></span>
               Mark as a favourite
             </button>
+            <!-- MARKETPLACE — turn this moment into a sellable listing -->
+            <div class="rounded-xl border border-grey-light bg-grey-light/60 p-3">
+              <label class="flex cursor-pointer items-center justify-between text-sm font-semibold text-accent-blue/80">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-tag text-primary-theme"></i> Sell this item</span>
+                <input type="checkbox" id="upSellOn" class="mk-switch" onchange="toggleSell()" />
+              </label>
+              <div id="upSellFields" class="mt-3 hidden space-y-2.5">
+                <div class="grid grid-cols-2 gap-2.5">
+                  <div><span class="mk-lbl">Price ($)</span><input id="upSellPrice" type="number" inputmode="decimal" min="0" step="1" placeholder="0" class="mk-in" /></div>
+                  <div><span class="mk-lbl">Condition</span><select id="upSellCond" class="mk-in"><option>New</option><option>Like new</option><option selected>Good</option><option>Used</option></select></div>
+                </div>
+                <label class="flex items-center gap-2 text-xs font-medium text-accent-blue/70"><input type="checkbox" id="upSellFreeShip" class="mk-switch" checked onchange="toggleFreeShip()" /> Free shipping</label>
+                <input id="upSellShip" type="number" inputmode="decimal" min="0" step="1" placeholder="Shipping cost ($)" class="mk-in hidden" />
+                <p class="text-[11px] leading-snug text-accent-blue/45"><i class="fa-solid fa-circle-info"></i> Buyers can purchase &amp; track shipping. A 5% platform fee applies on each sale.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1142,6 +1183,22 @@
         <button onclick="closeStats()" aria-label="Close" class="ml-auto grid h-8 w-8 shrink-0 place-items-center rounded-full text-accent-blue/50 transition hover:bg-grey-light"><i class="fa fa-xmark"></i></button>
       </div>
       <div id="stBody" class="mt-3"></div>
+    </div>
+  </div>
+
+  <!-- ===================== MARKETPLACE — listing · buy · order tracking ===================== -->
+  <div id="saleModal" class="hidden" aria-hidden="true" role="dialog" aria-label="Marketplace listing">
+    <div class="fixed inset-0 z-[3200] bg-black/55 backdrop-blur-sm" onclick="closeSale()"></div>
+    <div class="modal-scroll fixed left-1/2 top-1/2 z-[3201] flex max-h-[88vh] w-[92%] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col overflow-y-auto rounded-3xl bg-white p-5 pr-2.5 shadow-2xl dark:bg-[#1b2430]">
+      <div class="flex items-center gap-3">
+        <img id="saleThumb" class="h-14 w-14 shrink-0 rounded-2xl object-cover" alt="" />
+        <div class="min-w-0">
+          <p id="saleTitle" class="truncate font-bold text-accent-blue">Item</p>
+          <p id="saleSub" class="truncate text-xs text-accent-blue/55">Marketplace</p>
+        </div>
+        <button onclick="closeSale()" aria-label="Close" class="ml-auto grid h-8 w-8 shrink-0 place-items-center rounded-full text-accent-blue/50 transition hover:bg-grey-light"><i class="fa fa-xmark"></i></button>
+      </div>
+      <div id="saleBody" class="mt-4"></div>
     </div>
   </div>
 
@@ -1396,6 +1453,9 @@
         return { name:who.name, img:who.img, text:_cseed[(i*3+k) % _cseed.length] };
       });
     });
+    // demo marketplace listings — a couple of moments are also for sale (front-end prototype)
+    if(photos[5])  photos[5].sale  = { price:45,  cond:'Good',     ship:0,  status:'listed', stage:0 };
+    if(photos[15]) photos[15].sale = { price:180, cond:'Like new', ship:12, status:'listed', stage:0 };
 
     // ---- travel maths: how far this life has roamed ----
     function haversineKm(a,b){
@@ -1768,6 +1828,68 @@
           <div class="mt-3">`+ms.map(p=>`<div class="st-stat"><span><i class="fa-solid fa-medal mr-1.5 text-primary-theme"></i>${esc(p.milestone)}</span><b>Age ${p.age} · ${p.year}</b></div>`).join('')+`</div>`;
       }
     }
+
+    /* ===================== MARKETPLACE (front-end prototype) =====================
+       List a photo for sale → buyers see price + 5% platform-fee breakdown → Buy →
+       a mock order with a shipping tracker. Real payments/shipping need a backend. */
+    const MK_FEE = 0.05;
+    const MK_STAGES = [['Ordered','fa-receipt'],['Packed','fa-box'],['Shipped','fa-truck-fast'],['Out for delivery','fa-route'],['Delivered','fa-house-circle-check']];
+    const _money = n => '$'+Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
+    let _upSale = { on:false }, _saleIdx = -1;
+    function toggleSell(){ const on=document.getElementById('upSellOn').checked; _upSale.on=on; const f=document.getElementById('upSellFields'); if(f) f.classList.toggle('hidden', !on); }
+    function toggleFreeShip(){ const free=document.getElementById('upSellFreeShip').checked; const s=document.getElementById('upSellShip'); if(s) s.classList.toggle('hidden', free); }
+    function saleSave(){
+      const on=document.getElementById('upSellOn'); if(!on || !on.checked) return null;
+      const price=parseFloat(document.getElementById('upSellPrice').value)||0; if(price<=0) return null;
+      const free=document.getElementById('upSellFreeShip').checked;
+      return { price, cond:document.getElementById('upSellCond').value, ship: free?0:(parseFloat(document.getElementById('upSellShip').value)||0), status:'listed', stage:0 };
+    }
+    function prefillSale(sale){
+      const on=document.getElementById('upSellOn'); if(!on) return;
+      on.checked=!!sale; toggleSell();
+      if(sale){
+        document.getElementById('upSellPrice').value=sale.price;
+        const cs=document.getElementById('upSellCond'); if(cs && sale.cond){ if(![...cs.options].some(o=>o.value===sale.cond)){ const o=document.createElement('option'); o.textContent=sale.cond; cs.appendChild(o);} cs.value=sale.cond; }
+        const free=!sale.ship; document.getElementById('upSellFreeShip').checked=free; toggleFreeShip();
+        if(!free) document.getElementById('upSellShip').value=sale.ship;
+      }
+    }
+    function openSale(idx){
+      _saleIdx=(idx==null?active:idx); const p=photos[_saleIdx]; if(!p||!p.sale) return;
+      const t=document.getElementById('saleThumb'); if(t){ t.onerror=function(){this.onerror=null;this.src=imgAlt(p.id);}; t.src=imgFor(p.id); }
+      document.getElementById('saleTitle').textContent=p.name;
+      document.getElementById('saleSub').textContent=p.loc;
+      const m=document.getElementById('saleModal'); m.classList.remove('hidden'); m.setAttribute('aria-hidden','false'); if(typeof syncBodyScroll==='function') syncBodyScroll();
+      renderSale();
+    }
+    function closeSale(){ const m=document.getElementById('saleModal'); if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); if(typeof syncBodyScroll==='function') syncBodyScroll(); } }
+    function buySale(){ const p=photos[_saleIdx]; if(!p||!p.sale) return; p.sale.status='ordered'; p.sale.stage=0; renderSale(); renderCarousel(); if(typeof confettiBurst==='function') confettiBurst(); toast('Order placed — tracking started','fa-bag-shopping'); }
+    function advanceSale(){ const p=photos[_saleIdx]; if(!p||!p.sale) return; p.sale.stage=Math.min(MK_STAGES.length-1,(p.sale.stage||0)+1); renderSale(); }
+    function mkMsgSeller(){ toast('Buyer ⇄ seller chat — arrives with the chat system','fa-comment'); }
+    function renderSale(){
+      const p=photos[_saleIdx], s=p&&p.sale, body=document.getElementById('saleBody'); if(!s||!body) return;
+      const fee=Math.round(s.price*MK_FEE*100)/100, total=s.price+(s.ship||0);
+      if(s.status==='ordered'){
+        const stage=s.stage||0, last=stage>=MK_STAGES.length-1;
+        const steps=MK_STAGES.map((st,i)=>`<div class="step ${i<=stage?'on':''}"><div class="d"><i class="fa-solid ${i<stage?'fa-check':st[1]}"></i></div>${st[0]}</div>`).join('');
+        body.innerHTML = `<div class="rounded-2xl bg-grey-light p-3 text-center"><p class="text-sm font-bold text-green-600"><i class="fa-solid fa-circle-check"></i> ${last?'Delivered':'Order in progress'}</p><p class="text-xs text-accent-blue/55">Order #SB${1000+p.id} · ${_money(total)} paid</p></div>
+          <div class="mk-track">${steps}</div>
+          <p class="mt-2 text-center text-xs text-accent-blue/55">${last?'Your item has arrived 🎉':'Estimated delivery in '+(MK_STAGES.length-1-stage)+' step(s)'}</p>
+          ${last?'':'<button class="mk-ghost" onclick="advanceSale()"><i class="fa-solid fa-forward"></i> Advance status (demo)</button>'}
+          <button class="mk-ghost" onclick="mkMsgSeller()"><i class="fa-regular fa-comment"></i> Message seller</button>`;
+      } else {
+        body.innerHTML = `<div class="flex items-end justify-between"><span class="mk-price">${_money(s.price)}</span><span class="mk-cond"><i class="fa-solid fa-circle-check"></i> ${esc(s.cond)}</span></div>
+          <div class="mt-3">
+            <div class="mk-row"><span>Item price</span><b>${_money(s.price)}</b></div>
+            <div class="mk-row"><span>Shipping</span><b>${s.ship?_money(s.ship):'Free'}</b></div>
+            <div class="mk-row"><span>Platform fee (5%, from seller)</span><b>${_money(fee)}</b></div>
+            <div class="mk-total"><span>You pay</span><b>${_money(total)}</b></div>
+          </div>
+          <div class="mt-3 flex items-center gap-2 text-xs text-accent-blue/60"><img src="${ME.img}" class="h-6 w-6 rounded-full object-cover" alt=""/> Sold by <b class="text-accent-blue">${esc(ME.name)}</b></div>
+          <button class="mk-buy" onclick="buySale()"><i class="fa-solid fa-bag-shopping"></i> Buy now · ${_money(total)}</button>
+          <button class="mk-ghost" onclick="mkMsgSeller()"><i class="fa-regular fa-comment"></i> Message seller</button>`;
+      }
+    }
     // life chapters — which photos belong to each era (indices into the sorted photos array)
     const CHAPTERS=[{a:0,b:5},{a:6,b:9},{a:10,b:12},{a:13,b:15},{a:16,b:19}];
     function updateChapters(){
@@ -1804,6 +1926,7 @@
               </div>
             </div>
             <div class="absolute bottom-0 left-0 w-full p-3 text-white">
+              ${p.sale?`<button type="button" onclick="event.stopPropagation();openSale(${i})" class="sale-badge mb-1.5"><i class="fa-solid fa-tag"></i> ${p.sale.status==='ordered'?'Ordered':'For sale · '+_money(p.sale.price)}</button> `:''}
               ${p.milestone?`<span class="ms-badge mb-1.5"><i class="fa-solid fa-medal"></i> ${p.milestone}</span>`:''}
               <p class="text-base font-bold leading-tight">${p.name}${p.fav?' <i class=\"fa fa-star text-primary-theme text-[11px]\"></i>':''}</p>
               <div class="mt-1 flex items-center justify-between text-xs text-white/80">
@@ -2371,7 +2494,7 @@
 
     // lock the page behind any open overlay so a touch-scroll doesn't bleed through
     function syncBodyScroll(){
-      const anyOpen=['uploadModal','shareModal','ancModal','modal','statsModal'].some(id=>{ const m=document.getElementById(id); return m && !m.classList.contains('hidden'); });
+      const anyOpen=['uploadModal','shareModal','ancModal','modal','statsModal','saleModal'].some(id=>{ const m=document.getElementById(id); return m && !m.classList.contains('hidden'); });
       document.body.style.overflow = anyOpen ? 'hidden' : '';
     }
     // ---- ANCESTRY (teaser; full module lives elsewhere) ----
@@ -2435,7 +2558,8 @@
       _upFav=!!p.fav;
       const fs=document.getElementById('upFavStar'); if(fs){ fs.innerHTML=`<i class="fa-${_upFav?'solid':'regular'} fa-star"></i>`; fs.style.color=_upFav?'var(--brand)':''; }
       const fb=document.getElementById('upFav'); if(fb) fb.classList.toggle('up-fav-on', _upFav);
-      if(p.desc || p.milestone || (p.song&&p.song!=='a new memory') || p.fav){ const more=document.getElementById('upMore'); if(more) more.classList.remove('hidden'); const mch=document.getElementById('upMoreChevron'); if(mch) mch.style.transform='rotate(180deg)'; }
+      prefillSale(p.sale);   // restore the marketplace listing (if any)
+      if(p.desc || p.milestone || (p.song&&p.song!=='a new memory') || p.fav || p.sale){ const more=document.getElementById('upMore'); if(more) more.classList.remove('hidden'); const mch=document.getElementById('upMoreChevron'); if(mch) mch.style.transform='rotate(180deg)'; }
       renderMeta(); updateUploadValid();
     }
     // people picker — rebuilt from the roster (which can grow when you add someone new)
@@ -2477,7 +2601,10 @@
     }
     function closeUpload(){ const m=document.getElementById('uploadModal'); m.classList.add('hidden'); m.classList.remove('flex'); syncBodyScroll(); }
     function resetUpload(){
-      _newDataURL=null; _newPhotos=[]; _upPrivacy='Public'; _meta={}; _upMode=''; _upModeDetail=''; _upModeIcon=''; _upSvc={}; _upPeople=[]; _editId=null;
+      _newDataURL=null; _newPhotos=[]; _upPrivacy='Public'; _meta={}; _upMode=''; _upModeDetail=''; _upModeIcon=''; _upSvc={}; _upSale={on:false}; _upPeople=[]; _editId=null;
+      const so=document.getElementById('upSellOn'); if(so){ so.checked=false; const f=document.getElementById('upSellFields'); if(f) f.classList.add('hidden'); }
+      const sp=document.getElementById('upSellPrice'); if(sp) sp.value=''; const ssh=document.getElementById('upSellShip'); if(ssh){ ssh.value=''; ssh.classList.add('hidden'); }
+      const sfs=document.getElementById('upSellFreeShip'); if(sfs) sfs.checked=true; const sc=document.getElementById('upSellCond'); if(sc) sc.value='Good';
       const ti=document.getElementById('upTitle'); if(ti) ti.textContent='Add a memory';
       const sl=document.getElementById('upSaveLabel'); if(sl) sl.textContent='Add to timeline';
       const chgb=document.getElementById('upChangeBtn'); if(chgb) chgb.classList.remove('hidden');
@@ -2698,7 +2825,7 @@
     // Esc closes whichever overlay is open
     document.addEventListener('keydown', e=>{
       if(e.key!=='Escape') return;
-      const order=[['uploadModal',closeUpload],['shareModal',closeShare],['ancModal',closeAncestry],['statsModal',closeStats]];
+      const order=[['uploadModal',closeUpload],['shareModal',closeShare],['ancModal',closeAncestry],['statsModal',closeStats],['saleModal',closeSale]];
       for(const [id,fn] of order){ const m=document.getElementById(id); if(m && !m.classList.contains('hidden')){ fn(); return; } }
       const pm=document.getElementById('modal'); if(pm && !pm.classList.contains('hidden')) closeModal();
     });
@@ -2899,7 +3026,7 @@
             cam:_meta.cam||p.cam||null, y, mo, d, day:_wd[new Date(y,mo,d).getDay()], age:y-BORN,
             dmy:`${String(d).padStart(2,'0')} ${_mo[mo]}`, monShort:_mo[mo], monFull:_moF[mo], year:y,
             gallery, people, mood, song:songVal, season:seasonOf(mo), milestone:milestoneVal, fav:_upFav,
-            modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), privacy:_upPrivacy });
+            modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), sale:(function(){ const s=saleSave(); if(s && p.sale && p.sale.status==='ordered'){ s.status=p.sale.status; s.stage=p.sale.stage; } return s; })(), privacy:_upPrivacy });
           photos.sort((a,b)=> new Date(a.y,a.mo,a.d) - new Date(b.y,b.mo,b.d));
           recomputeTravel(); rebuildMap(); renderCarousel(); renderRuler(); updateMemoryStats();
           const memModalOpen=!document.getElementById('modal').classList.contains('hidden');
@@ -2919,7 +3046,7 @@
         y, mo, d, day:_wd[new Date(y,mo,d).getDay()], age:y-BORN,
         dmy:`${String(d).padStart(2,'0')} ${_mo[mo]}`, monShort:_mo[mo], monFull:_moF[mo], year:y,
         type:'photo', dur:null, vsrc:null, gallery, people, mood, song:songVal, season:seasonOf(mo), milestone:milestoneVal, fav:_upFav,
-        modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), privacy:_upPrivacy, likes:0, liked:false, comments:[] };
+        modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), sale:saleSave(), privacy:_upPrivacy, likes:0, liked:false, comments:[] };
       photos.push(np);
       photos.sort((a,b)=> new Date(a.y,a.mo,a.d) - new Date(b.y,b.mo,b.d));
       recomputeTravel(); rebuildMap(); renderCarousel(); renderRuler(); updateMemoryStats();
