@@ -196,6 +196,19 @@
     .mk-track .step.on .d { background:var(--brand); border-color:var(--brand); color:#fff; }
     .mk-track .step:not(:first-child)::before { content:''; position:absolute; top:10px; right:50%; left:-50%; height:2px; background:var(--c-line); z-index:0; }
     .mk-track .step.on:not(:first-child)::before { background:var(--brand); }
+    /* ===== photo details: website · rating · custom "Other" fields ===== */
+    .up-stars { display:flex; gap:5px; font-size:19px; color:var(--c-line); }
+    .up-stars i { cursor:pointer; transition:color .12s, transform .12s; }
+    .up-stars i:hover { transform:scale(1.15); }
+    .up-stars i.on { color:#f5b50a; }
+    .up-extra-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 7px 4px 10px; border-radius:9999px; font-size:11.5px; font-weight:600; color:var(--c-text); background:var(--c-bg); border:1px solid var(--c-line); }
+    .up-extra-chip b { color:var(--c-a2); font-weight:700; }
+    .up-extra-chip button { display:grid; place-items:center; width:16px; height:16px; border-radius:50%; background:rgba(var(--brand-glow),.14); color:var(--brand); border:none; cursor:pointer; font-size:9px; }
+    .md-detail { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+    .md-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:9999px; font-size:11.5px; font-weight:600; color:var(--c-text); background:var(--c-bg); border:1px solid var(--c-line); max-width:100%; }
+    .md-chip i { color:var(--brand); } .md-chip b { color:var(--c-a2); font-weight:700; }
+    .md-chip a { color:var(--brand); font-weight:700; text-decoration:none; } .md-chip a:hover { text-decoration:underline; }
+    .md-stars { color:#f5b50a; letter-spacing:1px; }
     /* ===== Ken Burns drift on the immersive hero ===== */
     @keyframes kenburns { from{ transform:scale(1.001) } to{ transform:scale(1.09) translate(-1.5%,-1%) } }
     #stageWrap.stage-on #stageImg { animation:kenburns 14s ease-out alternate infinite; }
@@ -935,6 +948,7 @@
             <p id="modalDesc" class="mt-1.5 text-sm text-accent-blue/80">Caught a beautiful sunrise on the trail today. 🌄</p>
             <div id="modalPeople" class="mt-3 flex items-center gap-2"></div>
             <div id="modalVibe" class="mt-3 flex flex-wrap items-center gap-2"></div>
+            <div id="modalDetails" class="md-detail" style="display:none"></div>
           </div>
 
           <!-- counters -->
@@ -1150,6 +1164,27 @@
               <span id="upFavStar" class="grid h-6 w-6 place-items-center rounded-full text-accent-blue/40 transition"><i class="fa-regular fa-star"></i></span>
               Mark as a favourite
             </button>
+            <!-- DETAILS & INFO — website · rating · custom "Other" fields -->
+            <div class="space-y-2.5 rounded-xl border border-grey-light bg-grey-light/60 p-3">
+              <p class="text-sm font-semibold text-accent-blue/80"><i class="fa-solid fa-circle-info text-primary-theme"></i> Details &amp; info</p>
+              <div>
+                <span class="mk-lbl">Website / link</span>
+                <input id="upWebsite" type="url" inputmode="url" maxlength="90" placeholder="e.g. myblog.com/this-trip" class="mk-in" />
+              </div>
+              <div>
+                <span class="mk-lbl">Your rating</span>
+                <div id="upStars" class="up-stars" role="radiogroup" aria-label="Rating"></div>
+              </div>
+              <div>
+                <span class="mk-lbl">Custom info ("Other")</span>
+                <div id="upExtrasList" class="mb-1.5 flex flex-wrap gap-1.5"></div>
+                <div class="flex gap-1.5">
+                  <input id="upExtraK" maxlength="22" placeholder="Label (e.g. Camera)" class="mk-in" />
+                  <input id="upExtraV" maxlength="48" placeholder="Value" class="mk-in" onkeydown="if(event.key==='Enter'){event.preventDefault();addExtra()}" />
+                  <button type="button" onclick="addExtra()" aria-label="Add field" class="shrink-0 rounded-lg bg-primary-theme px-3 text-white transition active:scale-95"><i class="fa fa-plus"></i></button>
+                </div>
+              </div>
+            </div>
             <!-- MARKETPLACE — turn this moment into a sellable listing -->
             <div class="rounded-xl border border-grey-light bg-grey-light/60 p-3">
               <label class="flex cursor-pointer items-center justify-between text-sm font-semibold text-accent-blue/80">
@@ -1464,6 +1499,9 @@
     // demo marketplace listings — a couple of moments are also for sale (front-end prototype)
     if(photos[5])  photos[5].sale  = { price:45,  cond:'Good',     ship:0,  status:'listed', stage:0 };
     if(photos[15]) photos[15].sale = { price:180, cond:'Like new', ship:12, status:'listed', stage:0 };
+    // demo "details & info" — website · rating · custom fields (front-end)
+    if(photos[14]){ photos[14].rating=5; photos[14].website='everestblog.com/basecamp'; photos[14].extras=[{k:'Camera',v:'GoPro 12'},{k:'Altitude',v:'5,364 m'}]; }
+    if(photos[11]){ photos[11].rating=4; photos[11].website='wikivoyage.org/rome'; photos[11].extras=[{k:'Trip',v:'Backpacking'}]; }
     // ---- analytics helpers (views / shares) ----
     const _fmtK = n => (n>=1000 ? (n/1000).toFixed(n>=10000?0:1).replace('.0','')+'k' : String(n||0));
     function trackView(i){ const p=photos[i]; if(!p) return; p.views=(p.views||0)+1; const mv=document.getElementById('mViews'); if(mv) mv.textContent=_fmtK(p.views); }
@@ -1877,6 +1915,24 @@
     function buySale(){ const p=photos[_saleIdx]; if(!p||!p.sale) return; p.sale.status='ordered'; p.sale.stage=0; renderSale(); renderCarousel(); if(typeof confettiBurst==='function') confettiBurst(); toast('Order placed — tracking started','fa-bag-shopping'); }
     function advanceSale(){ const p=photos[_saleIdx]; if(!p||!p.sale) return; p.sale.stage=Math.min(MK_STAGES.length-1,(p.sale.stage||0)+1); renderSale(); }
     function mkMsgSeller(){ toast('Buyer ⇄ seller chat — arrives with the chat system','fa-comment'); }
+
+    /* ===== photo details: website · rating · custom "Other" fields ===== */
+    let _upRating = 0, _upExtras = [];
+    function renderUpStars(){ const el=document.getElementById('upStars'); if(!el) return; el.innerHTML=[1,2,3,4,5].map(n=>`<i class="fa-${n<=_upRating?'solid':'regular'} fa-star ${n<=_upRating?'on':''}" role="radio" aria-checked="${n===_upRating}" tabindex="0" aria-label="${n} star${n>1?'s':''}" onclick="setRating(${n})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setRating(${n})}"></i>`).join(''); }
+    function setRating(n){ _upRating=(_upRating===n?0:n); renderUpStars(); }
+    function renderUpExtras(){ const el=document.getElementById('upExtrasList'); if(!el) return; el.innerHTML=_upExtras.map((x,i)=>`<span class="up-extra-chip"><b>${esc(x.k)}:</b> ${esc(x.v)} <button type="button" aria-label="Remove" onclick="removeExtra(${i})"><i class="fa fa-xmark"></i></button></span>`).join(''); }
+    function addExtra(){ const ke=document.getElementById('upExtraK'), ve=document.getElementById('upExtraV'); const k=(ke.value||'').trim(), v=(ve.value||'').trim(); if(!k||!v) return; _upExtras.push({k,v}); ke.value=''; ve.value=''; ke.focus(); renderUpExtras(); }
+    function removeExtra(i){ _upExtras.splice(i,1); renderUpExtras(); }
+    function detailsSave(){ const w=(document.getElementById('upWebsite').value||'').trim(); return { website:w||null, rating:_upRating||0, extras:_upExtras.slice() }; }
+    function prefillDetails(p){ document.getElementById('upWebsite').value=p.website||''; _upRating=p.rating||0; renderUpStars(); _upExtras=(p.extras||[]).map(x=>({k:x.k,v:x.v})); renderUpExtras(); }
+    const _safeHref = u => /^https?:\/\//i.test(u)?u:'https://'+u;
+    function renderModalDetails(p){
+      const el=document.getElementById('modalDetails'); if(!el) return; const parts=[];
+      if(p.rating) parts.push(`<span class="md-chip"><span class="md-stars">${'★'.repeat(p.rating)}${'☆'.repeat(5-p.rating)}</span></span>`);
+      if(p.website) parts.push(`<span class="md-chip"><i class="fa-solid fa-link"></i> <a href="${esc(_safeHref(p.website))}" target="_blank" rel="noopener">${esc(p.website.replace(/^https?:\/\//,''))}</a></span>`);
+      (p.extras||[]).forEach(x=> parts.push(`<span class="md-chip"><b>${esc(x.k)}:</b> ${esc(x.v)}</span>`));
+      el.innerHTML=parts.join(''); el.style.display=parts.length?'flex':'none';
+    }
     function renderSale(){
       const p=photos[_saleIdx], s=p&&p.sale, body=document.getElementById('saleBody'); if(!s||!body) return;
       const fee=Math.round(s.price*MK_FEE*100)/100, total=s.price+(s.ship||0);
@@ -2164,6 +2220,7 @@
       if(vibe) vibe.innerHTML = `<span class="vibe-chip"><i class="fa-solid fa-face-smile"></i> ${p.mood}</span>`
         + `<span class="vibe-chip"><i class="fa-solid ${p.season[1]}"></i> ${p.season[0]}</span>`
         + `<span class="vibe-chip"><i class="fa-solid fa-music"></i> ${p.song}</span>`;
+      renderModalDetails(p);   // website · rating · custom fields
       const pv=document.getElementById('modalPrivacy');
       if(pv){ const map={Public:['fa-globe-americas','Public'], Friends:['fa-user-group','Friends only'], Private:['fa-lock','Only me']}, k=p.privacy||'Public'; pv.className='fas '+map[k][0]; pv.title=map[k][1]; }
       const mViewsEl=document.getElementById('mViews'); if(mViewsEl) mViewsEl.textContent=_fmtK(p.views);
@@ -2572,7 +2629,8 @@
       const fs=document.getElementById('upFavStar'); if(fs){ fs.innerHTML=`<i class="fa-${_upFav?'solid':'regular'} fa-star"></i>`; fs.style.color=_upFav?'var(--brand)':''; }
       const fb=document.getElementById('upFav'); if(fb) fb.classList.toggle('up-fav-on', _upFav);
       prefillSale(p.sale);   // restore the marketplace listing (if any)
-      if(p.desc || p.milestone || (p.song&&p.song!=='a new memory') || p.fav || p.sale){ const more=document.getElementById('upMore'); if(more) more.classList.remove('hidden'); const mch=document.getElementById('upMoreChevron'); if(mch) mch.style.transform='rotate(180deg)'; }
+      prefillDetails(p);     // restore website · rating · custom fields
+      if(p.desc || p.milestone || (p.song&&p.song!=='a new memory') || p.fav || p.sale || p.website || p.rating || (p.extras&&p.extras.length)){ const more=document.getElementById('upMore'); if(more) more.classList.remove('hidden'); const mch=document.getElementById('upMoreChevron'); if(mch) mch.style.transform='rotate(180deg)'; }
       renderMeta(); updateUploadValid();
     }
     // people picker — rebuilt from the roster (which can grow when you add someone new)
@@ -2618,6 +2676,7 @@
       const so=document.getElementById('upSellOn'); if(so){ so.checked=false; const f=document.getElementById('upSellFields'); if(f) f.classList.add('hidden'); }
       const sp=document.getElementById('upSellPrice'); if(sp) sp.value=''; const ssh=document.getElementById('upSellShip'); if(ssh){ ssh.value=''; ssh.classList.add('hidden'); }
       const sfs=document.getElementById('upSellFreeShip'); if(sfs) sfs.checked=true; const sc=document.getElementById('upSellCond'); if(sc) sc.value='Good';
+      const uw=document.getElementById('upWebsite'); if(uw) uw.value=''; _upRating=0; _upExtras=[]; renderUpStars(); renderUpExtras();   // reset details
       const ti=document.getElementById('upTitle'); if(ti) ti.textContent='Add a memory';
       const sl=document.getElementById('upSaveLabel'); if(sl) sl.textContent='Add to timeline';
       const chgb=document.getElementById('upChangeBtn'); if(chgb) chgb.classList.remove('hidden');
@@ -3039,7 +3098,7 @@
             cam:_meta.cam||p.cam||null, y, mo, d, day:_wd[new Date(y,mo,d).getDay()], age:y-BORN,
             dmy:`${String(d).padStart(2,'0')} ${_mo[mo]}`, monShort:_mo[mo], monFull:_moF[mo], year:y,
             gallery, people, mood, song:songVal, season:seasonOf(mo), milestone:milestoneVal, fav:_upFav,
-            modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), sale:(function(){ const s=saleSave(); if(s && p.sale && p.sale.status==='ordered'){ s.status=p.sale.status; s.stage=p.sale.stage; } return s; })(), privacy:_upPrivacy });
+            modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), sale:(function(){ const s=saleSave(); if(s && p.sale && p.sale.status==='ordered'){ s.status=p.sale.status; s.stage=p.sale.stage; } return s; })(), ...detailsSave(), privacy:_upPrivacy });
           photos.sort((a,b)=> new Date(a.y,a.mo,a.d) - new Date(b.y,b.mo,b.d));
           recomputeTravel(); rebuildMap(); renderCarousel(); renderRuler(); updateMemoryStats();
           const memModalOpen=!document.getElementById('modal').classList.contains('hidden');
@@ -3059,7 +3118,7 @@
         y, mo, d, day:_wd[new Date(y,mo,d).getDay()], age:y-BORN,
         dmy:`${String(d).padStart(2,'0')} ${_mo[mo]}`, monShort:_mo[mo], monFull:_moF[mo], year:y,
         type:'photo', dur:null, vsrc:null, gallery, people, mood, song:songVal, season:seasonOf(mo), milestone:milestoneVal, fav:_upFav,
-        modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), sale:saleSave(), privacy:_upPrivacy, likes:0, liked:false, comments:[] };
+        modeKey:_upMode||null, modeDetail:_upModeDetail||null, modeIcon:_upModeIcon||null, svc:svcSave(), sale:saleSave(), ...detailsSave(), privacy:_upPrivacy, likes:0, liked:false, comments:[] };
       photos.push(np);
       photos.sort((a,b)=> new Date(a.y,a.mo,a.d) - new Date(b.y,b.mo,b.d));
       recomputeTravel(); rebuildMap(); renderCarousel(); renderRuler(); updateMemoryStats();
