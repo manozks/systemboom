@@ -139,6 +139,33 @@
     .tv-ic { color:var(--brand); }
     .tv-sub { opacity:.55; font-weight:500; }
     #tvTotal { color:var(--brand); font-weight:800; }
+    /* the records chips are tappable → they open the full history breakdown */
+    .tv-chip { cursor:pointer; transition:transform .12s, box-shadow .2s; }
+    .tv-chip:hover { transform:translateY(-1px); box-shadow:0 8px 22px rgba(54,69,79,.16); }
+    .tv-chip:active { transform:scale(.97); }
+    .tv-chip .tv-go { opacity:.4; font-size:10px; margin-left:1px; }
+    /* ===== stats / history modal ===== */
+    .st-seg { display:flex; gap:6px; margin-top:12px; }
+    .st-seg button { flex:1; padding:7px 0; border-radius:9999px; font-size:12px; font-weight:700; color:var(--c-a2); background:var(--c-bg); border:1.5px solid transparent; cursor:pointer; transition:.15s; }
+    .st-seg button:hover { color:var(--brand); }
+    .st-seg button.on { background:var(--brand); color:#fff; }
+    .st-bar-row { display:flex; align-items:center; gap:10px; margin-top:9px; }
+    .st-bar-row .lbl { width:74px; flex:0 0 auto; font-size:11px; font-weight:700; color:var(--c-text); }
+    .st-bar-track { flex:1; height:22px; border-radius:7px; background:var(--c-bg); overflow:hidden; }
+    .st-bar-fill { height:100%; border-radius:7px; background:linear-gradient(90deg,var(--brand-lt),var(--brand)); min-width:3px; transition:width .45s ease; }
+    .st-bar-row .val { width:78px; flex:0 0 auto; text-align:right; font-size:11.5px; font-weight:800; color:var(--brand); }
+    .st-card { display:flex; align-items:center; gap:12px; padding:11px 13px; border-radius:16px; border:1px solid var(--c-line); margin-top:8px; }
+    .st-card .ic { width:40px; height:40px; flex:0 0 auto; display:grid; place-items:center; border-radius:12px; font-size:16px; color:var(--brand); background:rgba(var(--brand-glow),.12); }
+    .st-card .ttl { font-weight:800; font-size:14px; color:var(--c-text); }
+    .st-card .meta { font-size:11.5px; color:var(--c-a2); }
+    .st-card .big { margin-left:auto; font-size:15px; font-weight:800; color:var(--brand); white-space:nowrap; }
+    .st-jrny { font-size:11px; color:var(--c-a2); padding:5px 0 5px 52px; border-bottom:1px dashed var(--c-line); }
+    .st-jrny b { color:var(--c-text); }
+    .st-stat { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 2px; border-bottom:1px dashed var(--c-line); font-size:13px; color:var(--c-text); }
+    .st-stat b { color:var(--brand); white-space:nowrap; }
+    .st-hero { border-radius:18px; background:var(--c-bg); padding:14px; text-align:center; }
+    .st-hero .num { font-size:26px; font-weight:800; color:var(--brand); line-height:1.1; }
+    .st-hero .cap { font-size:11.5px; color:var(--c-a2); margin-top:3px; }
     /* ===== Ken Burns drift on the immersive hero ===== */
     @keyframes kenburns { from{ transform:scale(1.001) } to{ transform:scale(1.09) translate(-1.5%,-1%) } }
     #stageWrap.stage-on #stageImg { animation:kenburns 14s ease-out alternate infinite; }
@@ -774,9 +801,9 @@
       </button>
       <!-- TRAVEL RECORDS — distance roamed + how the latest move happened (floats on the map) -->
       <div id="travelBar" class="pointer-events-none absolute bottom-4 left-4 right-4 z-[500] flex flex-wrap items-center gap-2 text-sm sm:right-16">
-        <span class="liquid-light tv-chip pointer-events-auto" data-tip="Distance roamed so far" title="Distance roamed so far"><i class="fa-solid fa-earth-asia tv-ic"></i><b id="tvTotal">0 km</b><span class="tv-sub">roamed</span></span>
-        <span class="liquid-light tv-chip pointer-events-auto"><i class="fa-solid fa-cake-candles tv-ic"></i><span id="tvAge">Newborn</span></span>
-        <span class="liquid-light tv-chip pointer-events-auto"><i id="tvHopIcon" class="fa-solid fa-baby tv-ic"></i><span id="tvHop">Born here</span></span>
+        <span class="liquid-light tv-chip pointer-events-auto" role="button" tabindex="0" data-tip="Tap for the full distance history" title="Tap for the full distance history" onclick="openStats('km')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStats('km')}"><i class="fa-solid fa-earth-asia tv-ic"></i><b id="tvTotal">0 km</b><span class="tv-sub">roamed</span><i class="fa fa-chevron-right tv-go"></i></span>
+        <span class="liquid-light tv-chip pointer-events-auto" role="button" tabindex="0" data-tip="Tap for your life timeline" title="Tap for your life timeline" onclick="openStats('age')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStats('age')}"><i class="fa-solid fa-cake-candles tv-ic"></i><span id="tvAge">Newborn</span><i class="fa fa-chevron-right tv-go"></i></span>
+        <span class="liquid-light tv-chip pointer-events-auto" role="button" tabindex="0" data-tip="Tap for the transport breakdown" title="Tap for the transport breakdown" onclick="openStats('transport')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStats('transport')}"><i id="tvHopIcon" class="fa-solid fa-baby tv-ic"></i><span id="tvHop">Born here</span><i class="fa fa-chevron-right tv-go"></i></span>
       </div>
     </section>
 
@@ -1094,6 +1121,22 @@
         <button onclick="closeUpload()" class="rounded-full px-4 py-2.5 text-sm font-semibold text-accent-blue/70 transition hover:bg-grey-light">Cancel</button>
         <button id="upSave" onclick="saveUpload()" disabled class="rounded-full bg-primary-theme px-5 py-2.5 text-sm font-bold text-white shadow-glow transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"><i class="fa fa-check"></i> <span id="upSaveLabel">Add to timeline</span></button>
       </div>
+    </div>
+  </div>
+
+  <!-- ===================== TRAVEL-RECORDS HISTORY (km · age · transport) ===================== -->
+  <div id="statsModal" class="hidden" aria-hidden="true" role="dialog" aria-label="Travel history">
+    <div class="fixed inset-0 z-[3200] bg-black/55 backdrop-blur-sm" onclick="closeStats()"></div>
+    <div class="modal-scroll fixed left-1/2 top-1/2 z-[3201] flex max-h-[86vh] w-[92%] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col overflow-y-auto rounded-3xl bg-white p-5 pr-2.5 shadow-2xl dark:bg-[#1b2430]">
+      <div class="flex items-center gap-3">
+        <div id="stIcon" class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary-theme to-primary-red text-lg text-white shadow-glow"><i class="fa-solid fa-earth-asia"></i></div>
+        <div class="min-w-0">
+          <p id="stTitle" class="font-bold text-accent-blue">Distance roamed</p>
+          <p id="stSub" class="truncate text-xs text-accent-blue/60">since day one</p>
+        </div>
+        <button onclick="closeStats()" aria-label="Close" class="ml-auto grid h-8 w-8 shrink-0 place-items-center rounded-full text-accent-blue/50 transition hover:bg-grey-light"><i class="fa fa-xmark"></i></button>
+      </div>
+      <div id="stBody" class="mt-3"></div>
     </div>
   </div>
 
@@ -1645,6 +1688,65 @@
         const from=photos[active-1].loc.split(',')[0], to=photos[active].loc.split(',')[0];
         if(hop) hop.innerHTML = `${from} → <b>${to}</b> · ${km(_hopKm[active])} km <span class="tv-sub">${m.label}</span>`;
         if(hopIc) hopIc.className=`fa-solid ${m.icon} tv-ic`;
+      }
+    }
+
+    // ===== travel-records HISTORY — tap a chip (km · age · transport) to see the full breakdown =====
+    let _statsKind='km', _statsPeriod='year';
+    const _stPad=n=>String(n).padStart(2,'0');
+    function _stWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=(t.getUTCDay()+6)%7; t.setUTCDate(t.getUTCDate()-day+3); const first=new Date(Date.UTC(t.getUTCFullYear(),0,4)); const w=1+Math.round(((t-first)/864e5-3+((first.getUTCDay()+6)%7))/7); return {y:t.getUTCFullYear(), w}; }
+    function _baseMode(i){ const p=photos[i]; if(p.modeKey && TRAVEL_MODES[p.modeKey]) return {icon:TRAVEL_MODES[p.modeKey].icon, label:TRAVEL_MODES[p.modeKey].label}; const m=travelMode(_hopKm[i]); return {icon:m.icon, label:m.label}; }
+    function _kmBuckets(period){
+      const b={};
+      photos.forEach((p,i)=>{ if(i===0 || _hopKm[i]<=0) return; const d=new Date(p.y,p.mo,p.d); let key,label;
+        if(period==='day'){ key=`${p.y}-${_stPad(p.mo+1)}-${_stPad(p.d)}`; label=`${p.dmy} ’${String(p.year).slice(2)}`; }
+        else if(period==='week'){ const w=_stWeek(d); key=`${w.y}-W${_stPad(w.w)}`; label=`Wk ${w.w} ’${String(w.y).slice(2)}`; }
+        else if(period==='month'){ key=`${p.y}-${_stPad(p.mo+1)}`; label=`${p.monShort} ${p.year}`; }
+        else { key=`${p.y}`; label=`${p.year}`; }
+        if(!b[key]) b[key]={label,km:0,trips:0,t:d.getTime()}; b[key].km+=_hopKm[i]; b[key].trips++;
+      });
+      return Object.values(b).sort((a,b)=>a.t-b.t);
+    }
+    function _transportBuckets(){
+      const g={};
+      photos.forEach((p,i)=>{ if(i===0 || _hopKm[i]<=0) return; const m=_baseMode(i);
+        if(!g[m.label]) g[m.label]={icon:m.icon, label:m.label, km:0, trips:0, journeys:[]};
+        g[m.label].km+=_hopKm[i]; g[m.label].trips++;
+        g[m.label].journeys.push({from:photos[i-1].loc.split(',')[0], to:p.loc.split(',')[0], km:_hopKm[i], detail:(p.modeDetail&&p.modeDetail!==m.label)?p.modeDetail:'', year:p.year});
+      });
+      return Object.values(g).sort((a,b)=>b.km-a.km);
+    }
+    function openStats(kind){
+      _statsKind=kind||'km'; _statsPeriod='year';
+      const m=document.getElementById('statsModal'); if(!m) return;
+      m.classList.remove('hidden'); m.setAttribute('aria-hidden','false'); if(typeof syncBodyScroll==='function') syncBodyScroll();
+      renderStats();
+    }
+    function closeStats(){ const m=document.getElementById('statsModal'); if(m){ m.classList.add('hidden'); m.setAttribute('aria-hidden','true'); if(typeof syncBodyScroll==='function') syncBodyScroll(); } }
+    function setStatsPeriod(pr){ _statsPeriod=pr; renderStats(); }
+    function renderStats(){
+      const body=document.getElementById('stBody'), icon=document.getElementById('stIcon'), title=document.getElementById('stTitle'), sub=document.getElementById('stSub'); if(!body) return;
+      const totalKm=_cumKm[_cumKm.length-1]||0;
+      const cc=new Set(photos.map(p=>p.loc.split(', ').pop())).size, pc=new Set(photos.map(p=>p.loc)).size;
+      if(_statsKind==='km'){
+        icon.innerHTML='<i class="fa-solid fa-earth-asia"></i>'; title.textContent='Distance roamed'; sub.textContent='Auto-tracked since day one';
+        const buckets=_kmBuckets(_statsPeriod), maxKm=Math.max(1,...buckets.map(x=>x.km));
+        const seg=[['day','Daily'],['week','Weekly'],['month','Monthly'],['year','Yearly']].map(([k,lbl])=>`<button class="${_statsPeriod===k?'on':''}" onclick="setStatsPeriod('${k}')">${lbl}</button>`).join('');
+        const bars=buckets.length ? buckets.map(x=>`<div class="st-bar-row"><span class="lbl">${esc(x.label)}</span><div class="st-bar-track"><div class="st-bar-fill" style="width:${Math.max(3,Math.round(x.km/maxKm*100))}%"></div></div><span class="val">${km(x.km)} km</span></div>`).join('') : '<p class="mt-4 text-center text-xs text-accent-blue/50">No trips recorded in this view yet.</p>';
+        body.innerHTML = `<div class="st-hero"><div class="num">${km(totalKm)} km</div><div class="cap">total roamed · ${pc} places · ${cc} countries</div></div>
+          <div class="st-seg">${seg}</div><div class="mt-1">${bars}</div>`;
+      } else if(_statsKind==='transport'){
+        icon.innerHTML='<i class="fa-solid fa-plane-up"></i>'; title.textContent='How you travelled'; sub.textContent='Broken down by means of transport';
+        const groups=_transportBuckets();
+        body.innerHTML = `<div class="st-hero"><div class="num">${km(totalKm)} km</div><div class="cap">across ${groups.reduce((a,g)=>a+g.trips,0)} trips · ${groups.length} ways to travel</div></div>`
+          + groups.map(g=>`<div class="st-card"><div class="ic"><i class="fa-solid ${esc(g.icon)}"></i></div><div class="min-w-0"><div class="ttl">${esc(g.label)}</div><div class="meta">${g.trips} trip${g.trips>1?'s':''}</div></div><div class="big">${km(g.km)} km</div></div>`
+              + g.journeys.map(j=>`<div class="st-jrny">${esc(j.from)} → <b>${esc(j.to)}</b> · ${km(j.km)} km${j.detail?` · ${esc(j.detail)}`:''} · ${j.year}</div>`).join('')
+            ).join('');
+      } else {
+        icon.innerHTML='<i class="fa-solid fa-cake-candles"></i>'; title.textContent='Your life so far'; sub.textContent='A timeline of milestones';
+        const cur=photos[photos.length-1].age, ms=photos.filter(p=>p.milestone);
+        body.innerHTML = `<div class="st-hero"><div class="num">${cur} years</div><div class="cap">born ${BORN} · ${photos.length} moments · ${ms.length} milestones</div></div>
+          <div class="mt-3">`+ms.map(p=>`<div class="st-stat"><span><i class="fa-solid fa-medal mr-1.5 text-primary-theme"></i>${esc(p.milestone)}</span><b>Age ${p.age} · ${p.year}</b></div>`).join('')+`</div>`;
       }
     }
     // life chapters — which photos belong to each era (indices into the sorted photos array)
@@ -2250,7 +2352,7 @@
 
     // lock the page behind any open overlay so a touch-scroll doesn't bleed through
     function syncBodyScroll(){
-      const anyOpen=['uploadModal','shareModal','ancModal','modal'].some(id=>{ const m=document.getElementById(id); return m && !m.classList.contains('hidden'); });
+      const anyOpen=['uploadModal','shareModal','ancModal','modal','statsModal'].some(id=>{ const m=document.getElementById(id); return m && !m.classList.contains('hidden'); });
       document.body.style.overflow = anyOpen ? 'hidden' : '';
     }
     // ---- ANCESTRY (teaser; full module lives elsewhere) ----
@@ -2577,7 +2679,7 @@
     // Esc closes whichever overlay is open
     document.addEventListener('keydown', e=>{
       if(e.key!=='Escape') return;
-      const order=[['uploadModal',closeUpload],['shareModal',closeShare],['ancModal',closeAncestry]];
+      const order=[['uploadModal',closeUpload],['shareModal',closeShare],['ancModal',closeAncestry],['statsModal',closeStats]];
       for(const [id,fn] of order){ const m=document.getElementById(id); if(m && !m.classList.contains('hidden')){ fn(); return; } }
       const pm=document.getElementById('modal'); if(pm && !pm.classList.contains('hidden')) closeModal();
     });
