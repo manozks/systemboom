@@ -947,6 +947,12 @@
             </div>
             <span id="mCommentCount" class="text-accent-blue/60">3 comments</span>
           </div>
+          <!-- per-photo analytics: views & shares -->
+          <div class="mt-2 flex items-center gap-4 border-t border-grey-light pt-2 text-xs font-medium text-accent-blue/55">
+            <span><i class="fa-regular fa-eye text-accent-blue/40"></i> <b id="mViews" class="text-accent-blue/80">0</b> views</span>
+            <span><i class="fa-solid fa-share-nodes text-accent-blue/40"></i> <b id="mShares" class="text-accent-blue/80">0</b> shares</span>
+            <span class="ml-auto text-[11px] text-accent-blue/40">your content</span>
+          </div>
 
           <!-- actions -->
           <div class="mt-3 grid grid-cols-3 gap-1 border-y border-grey-light py-1 text-sm">
@@ -1447,6 +1453,8 @@
     photos.forEach((p,i)=>{
       p.likes = 7 + ((i*13+5) % 34);
       p.liked = false;
+      p.views = 120 + ((i*173+47) % 1850) + p.likes*4;   // analytics: seeded views (auto-grows on open)
+      p.shares = 1 + ((i*7+2) % 17);                       // analytics: seeded shares (grows on share)
       const n = 1 + ((i*7) % 3);   // 1–3 seed comments per memory
       p.comments = Array.from({length:n}, (_,k)=>{
         const who = _cppl[(i+k) % _cppl.length];
@@ -1456,6 +1464,9 @@
     // demo marketplace listings — a couple of moments are also for sale (front-end prototype)
     if(photos[5])  photos[5].sale  = { price:45,  cond:'Good',     ship:0,  status:'listed', stage:0 };
     if(photos[15]) photos[15].sale = { price:180, cond:'Like new', ship:12, status:'listed', stage:0 };
+    // ---- analytics helpers (views / shares) ----
+    const _fmtK = n => (n>=1000 ? (n/1000).toFixed(n>=10000?0:1).replace('.0','')+'k' : String(n||0));
+    function trackView(i){ const p=photos[i]; if(!p) return; p.views=(p.views||0)+1; const mv=document.getElementById('mViews'); if(mv) mv.textContent=_fmtK(p.views); }
 
     // ---- travel maths: how far this life has roamed ----
     function haversineKm(a,b){
@@ -1931,7 +1942,7 @@
               <p class="text-base font-bold leading-tight">${p.name}${p.fav?' <i class=\"fa fa-star text-primary-theme text-[11px]\"></i>':''}</p>
               <div class="mt-1 flex items-center justify-between text-xs text-white/80">
                 <span>${p.dmy} · ${p.day}</span>
-                <span class="flex items-center gap-2"><span><i class="fa-${p.liked?'solid':'regular'} fa-heart text-primary-theme"></i> ${p.likes}</span><span><i class="fa-regular fa-comment"></i> ${p.comments.length}</span></span>
+                <span class="flex items-center gap-2"><span><i class="fa-regular fa-eye"></i> ${_fmtK(p.views)}</span><span><i class="fa-${p.liked?'solid':'regular'} fa-heart text-primary-theme"></i> ${p.likes}</span><span><i class="fa-regular fa-comment"></i> ${p.comments.length}</span></span>
               </div>
             </div>`;
       const a11y = i=>`role="button" tabindex="0" aria-label="${photos[i].name}" onclick="openModal(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(${i});}"`;
@@ -2155,6 +2166,8 @@
         + `<span class="vibe-chip"><i class="fa-solid fa-music"></i> ${p.song}</span>`;
       const pv=document.getElementById('modalPrivacy');
       if(pv){ const map={Public:['fa-globe-americas','Public'], Friends:['fa-user-group','Friends only'], Private:['fa-lock','Only me']}, k=p.privacy||'Public'; pv.className='fas '+map[k][0]; pv.title=map[k][1]; }
+      const mViewsEl=document.getElementById('mViews'); if(mViewsEl) mViewsEl.textContent=_fmtK(p.views);
+      const mSharesEl=document.getElementById('mShares'); if(mSharesEl) mSharesEl.textContent=_fmtK(p.shares);
       paintLike(); renderComments();
     }
     // go to a specific index + keep the open modal in sync
@@ -2180,7 +2193,7 @@
       const stp=document.getElementById('stagePlay'); if(stp) stp.innerHTML=`<i class="fa fa-${name}"></i>`;
       updateStory(); renderTimelineActive();
     }
-    function openModal(i){ setActive(i);
+    function openModal(i){ setActive(i); trackView(active);   // count a view
       document.getElementById('modal').classList.remove('hidden');   // show first so a video can actually play
       fillModal();
       updateStory();
@@ -2237,7 +2250,7 @@
       imPos = Math.max(0, imList.indexOf(target));
       imOpen=true; document.body.classList.add('overflow-hidden');
       const ov=imEl(); ov.classList.remove('hidden'); ov.setAttribute('aria-hidden','false');
-      imBuild(); imResetZoom(false); imUpdateChrome(); imPreload();
+      imBuild(); imResetZoom(false); imUpdateChrome(); imPreload(); trackView(imList[imPos]);   // count a view
       const hint=document.getElementById('imHint'); if(hint) hint.style.display = (imPos<imList.length-1)?'flex':'none';
     }
     function closeImmersive(){
@@ -2255,7 +2268,7 @@
       tr.style.transition='transform .3s cubic-bezier(.22,.61,.36,1)';
       tr.style.transform=`translateY(${dir>0?-H:H}px)`;
       let done=false; const fin=()=>{ if(done) return; done=true; tr.removeEventListener('transitionend',fin);
-        imPos+=dir; imBuild(); imResetZoom(false); imUpdateChrome(); imPreload(); imBusy=false; };
+        imPos+=dir; imBuild(); imResetZoom(false); imUpdateChrome(); imPreload(); trackView(imList[imPos]); imBusy=false; };
       tr.addEventListener('transitionend',fin,{once:true});
       setTimeout(fin,360);   // fallback if transitionend is missed
     }
@@ -2453,7 +2466,7 @@
       else if(lk){ lk.select(); try{ document.execCommand('copy'); }catch(e){} }
       toast('Link copied to clipboard','fa-link');
     }
-    function shareTo(network){ closeShare(); toast('Shared to '+network,'fa-share-nodes'); }
+    function shareTo(network){ const p=photos[active]; if(p){ p.shares=(p.shares||0)+1; const msh=document.getElementById('mShares'); if(msh) msh.textContent=_fmtK(p.shares); } closeShare(); toast('Shared to '+network,'fa-share-nodes'); }
 
     // ---- NAV ----
     function navTo(ev, el, target){
